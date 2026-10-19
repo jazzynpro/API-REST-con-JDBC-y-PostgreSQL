@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.autoconfigure.web.ConditionalOnEnabledResourceChain;
 
 import com.krakdev.videojuegos.entidades.Videojuego;
 import com.krakedev.jdbc.Conexion;
@@ -32,11 +33,11 @@ public class VideojuegoJdbc {
 			con = Conexion.getConnection();
 			ps = con.prepareStatement(sql);
 			ps.setString(1, videojuego.getCodigo());
-			ps.setString(1, videojuego.getNombre());
-			ps.setString(1, videojuego.getPlataforma());
-			ps.setDouble(1, videojuego.getPrecio());
-			ps.setBoolean(1, videojuego.isDisponible());
-			ps.setString(1, videojuego.getGenero());
+			ps.setString(2, videojuego.getNombre());
+			ps.setString(3, videojuego.getPlataforma());
+			ps.setDouble(4, videojuego.getPrecio());
+			ps.setBoolean(5, videojuego.isDisponible());
+			ps.setString(6, videojuego.getGenero());
 
 			int filas = ps.executeUpdate();
 
@@ -88,12 +89,12 @@ public class VideojuegoJdbc {
 		} catch (Exception e) {
 			log.error("Error al listar: " + e.getMessage());
 		} finally {
-			
-				Conexion.cerrarConexiones(con, ps, rs);
+
+			Conexion.cerrarConexiones(con, ps, rs);
 		}
-	return videojuegos;
+		return videojuegos;
 	}
-	
+
 	public static Videojuego buscar(String codigo) {
 		Connection con = null;
 		PreparedStatement ps = null;
@@ -105,11 +106,11 @@ public class VideojuegoJdbc {
 		try {
 			con = Conexion.getConnection();
 			ps = con.prepareStatement(sql);
-			
-			ps.setString(1 , codigo);
+
+			ps.setString(1, codigo);
 			rs = ps.executeQuery();
-			
-			if(rs.next()) {
+
+			if (rs.next()) {
 				Videojuego videojuego = new Videojuego();
 
 				videojuego.setCodigo(rs.getString(1));
@@ -118,19 +119,63 @@ public class VideojuegoJdbc {
 				videojuego.setPrecio(rs.getDouble(4));
 				videojuego.setDisponible(rs.getBoolean(5));
 				videojuego.setGenero(rs.getString(6));
-				
+
 				log.info("Videojuego encontrado: ");
 
 				return videojuego;
 			}
-		}catch(Exception e) {
+		} catch (Exception e) {
 			log.error("Error al buscar por codigo " + e.getMessage());
-		}finally {
+		} finally {
 			Conexion.cerrarConexiones(con, ps, rs);
 		}
 		return null;
-		
 	}
+
+	public static Videojuego actualizar(Videojuego videojuego) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = """
+				update videojuegos set
+				nombre= ?,
+				plataforma = ?,
+				precio = ?,
+				disponible = ?,
+				genero = ?
+				where codigo = ?;
+										""";
+		try {
+			con = Conexion.getConnection();
+			ps = con.prepareStatement(sql);
+			
+			
+			ps.setString(1, videojuego.getNombre());
+			ps.setString(2, videojuego.getPlataforma());
+			ps.setDouble(3, videojuego.getPrecio());
+			ps.setBoolean(4, videojuego.isDisponible());
+			ps.setString(5, videojuego.getGenero());
+			
+			//CONDICION WHERE 
+			ps.setString(6, videojuego.getCodigo());
+			
+			int filas = ps.executeUpdate();
+			if(filas > 0) {
+			
+			log.info("Videojuego actualizado con exito");
+			
+			return buscar(videojuego.getCodigo());
+			}
+		}catch(Exception e){
+			log.error("Ocurrio un error al actualizar videojuego " + e.getMessage());
+	}finally {
+		Conexion.cerrarConexiones(con, ps, rs);
+	}
+	return null;
+		}
+
+	//metodo eliminar
+	
 	
 	
 	
