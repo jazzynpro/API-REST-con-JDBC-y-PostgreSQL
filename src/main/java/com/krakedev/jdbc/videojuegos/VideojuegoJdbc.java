@@ -148,35 +148,61 @@ public class VideojuegoJdbc {
 		try {
 			con = Conexion.getConnection();
 			ps = con.prepareStatement(sql);
-			
-			
+
 			ps.setString(1, videojuego.getNombre());
 			ps.setString(2, videojuego.getPlataforma());
 			ps.setDouble(3, videojuego.getPrecio());
 			ps.setBoolean(4, videojuego.isDisponible());
 			ps.setString(5, videojuego.getGenero());
-			
-			//CONDICION WHERE 
+
+			// CONDICION WHERE
 			ps.setString(6, videojuego.getCodigo());
+
+			int filas = ps.executeUpdate();
+			log.info("Filas actualizafas: " + filas);
+			
+			if (filas > 0) {
+
+				log.info("Videojuego actualizado con exito");
+
+				return buscar(videojuego.getCodigo());
+			}
+		} catch (Exception e) {
+			log.error("Ocurrio un error al actualizar videojuego " + e.getMessage());
+		} finally {
+			Conexion.cerrarConexiones(con, ps, rs);
+		}
+		return null;
+	}
+
+	// metodo eliminar
+	public static boolean eliminar(String codigo) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		
+		String sql = """
+				delete from videojuegos
+				where codigo = ?;
+										""";
+		try {
+			con = Conexion.getConnection();
+			ps = con.prepareStatement(sql);
+			
+			ps.setString(1, codigo);
 			
 			int filas = ps.executeUpdate();
-			if(filas > 0) {
+			log.info("Filas eliminadas: "  + filas);
+				if(filas > 0 ) {
+					return true;
+					}
 			
-			log.info("Videojuego actualizado con exito");
-			
-			return buscar(videojuego.getCodigo());
+			}catch(Exception e) {
+				log.error("Ocurrio un error al eliminar videojuego " + e.getMessage());
+			}finally {
+				Conexion.cerrarConexiones(con, ps, null);
 			}
-		}catch(Exception e){
-			log.error("Ocurrio un error al actualizar videojuego " + e.getMessage());
-	}finally {
-		Conexion.cerrarConexiones(con, ps, rs);
+		
+		return false;
 	}
-	return null;
-		}
 
-	//metodo eliminar
-	
-	
-	
-	
 }
