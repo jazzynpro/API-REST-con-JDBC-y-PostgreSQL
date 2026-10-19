@@ -88,15 +88,50 @@ public class VideojuegoJdbc {
 		} catch (Exception e) {
 			log.error("Error al listar: " + e.getMessage());
 		} finally {
-			try {
-				con.close();
-				ps.close();
-				rs.close();
-				log.info("Conexiones cerradas");
-			} catch (Exception e) {
-				log.error("Ocurrio un error al cerrar las conexiones: " + e.getMessage());
-			}
+			
+				Conexion.cerrarConexiones(con, ps, rs);
 		}
-		return videojuegos;
+	return videojuegos;
 	}
+	
+	public static Videojuego buscar(String codigo) {
+		Connection con = null;
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		String sql = """
+				select codigo, nombre, plataforma, precio, disponible, genero from videojuegos
+				where codigo = ?
+						""";
+		try {
+			con = Conexion.getConnection();
+			ps = con.prepareStatement(sql);
+			
+			ps.setString(1 , codigo);
+			rs = ps.executeQuery();
+			
+			if(rs.next()) {
+				Videojuego videojuego = new Videojuego();
+
+				videojuego.setCodigo(rs.getString(1));
+				videojuego.setNombre(rs.getString(2));
+				videojuego.setPlataforma(rs.getString(3));
+				videojuego.setPrecio(rs.getDouble(4));
+				videojuego.setDisponible(rs.getBoolean(5));
+				videojuego.setGenero(rs.getString(6));
+				
+				log.info("Videojuego encontrado: ");
+
+				return videojuego;
+			}
+		}catch(Exception e) {
+			log.error("Error al buscar por codigo " + e.getMessage());
+		}finally {
+			Conexion.cerrarConexiones(con, ps, rs);
+		}
+		return null;
+		
+	}
+	
+	
+	
 }

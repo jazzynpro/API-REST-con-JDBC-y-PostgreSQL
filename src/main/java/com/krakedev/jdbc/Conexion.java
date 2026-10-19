@@ -2,6 +2,8 @@ package com.krakedev.jdbc;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,4 +30,21 @@ public class Conexion {
 																	// ejecucion.
 		}
 	}
+	
+	public static void cerrarConexiones(Connection con, PreparedStatement ps, ResultSet rs) {
+		try {
+			if(con != null)
+			con.close();
+			if(ps != null)
+			ps.close();
+			if(rs != null)
+			rs.close();
+			log.info("Conexiones cerradas");
+		} catch (Exception e) {
+			log.error("Ocurrio un error al cerrar las conexiones: " + e.getMessage());
+		}
+	}
+	
+	
+	
 }
